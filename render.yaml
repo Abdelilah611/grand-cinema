@@ -1,0 +1,18 @@
+# Déploiement Render en une étape : service web + base PostgreSQL.
+services:
+  - type: web
+    name: grand-cinema
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: grand-cinema-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+
+databases:
+  - name: grand-cinema-db
+    plan: free
