@@ -1,0 +1,136 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[margin=2cm,headheight=16pt]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\definecolor{navy}{HTML}{101522}
+\definecolor{gold}{HTML}{DCA924}
+\definecolor{muted}{HTML}{596273}
+\definecolor{codebg}{HTML}{F2F4F7}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textcolor{muted}{Le Grand Cinéma}}
+\rhead{\textcolor{muted}{Guide du site}}
+\cfoot{\textcolor{muted}{\thepage}}
+\titleformat{\section}{\Large\bfseries\color{navy}}{}{0pt}{}
+\titleformat{\subsection}{\large\bfseries\color{navy}}{}{0pt}{}
+\setlist[itemize]{leftmargin=1.4em,itemsep=3pt,topsep=4pt}
+\lstdefinestyle{powershell}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codebg},
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+\begin{document}
+
+\begin{center}
+{\small\bfseries\color{gold} GUIDE UTILISATEUR ET TECHNIQUE}\par\vspace{8pt}
+{\Huge\bfseries\color{navy} Le Grand Cinéma}\par\vspace{5pt}
+{\large Réservation de films, séances et places}\par\vspace{13pt}
+\color{gold}\rule{0.7\linewidth}{2pt}
+\end{center}
+
+\section{Présentation}
+Le Grand Cinéma est un site de réservation en ligne. Les visiteurs peuvent consulter la programmation et les horaires. Après connexion, un client choisit une séance, sélectionne ses sièges et retrouve son billet électronique avec un QR code.
+
+\subsection{Parcours client}
+\begin{enumerate}[leftmargin=1.6em,itemsep=5pt]
+  \item Parcourir les films sur l'accueil; rechercher un titre ou filtrer par genre.
+  \item Ouvrir la fiche du film pour lire le synopsis et choisir une séance.
+  \item Se connecter ou créer un compte, puis sélectionner des sièges disponibles.
+  \item Confirmer la réservation et ouvrir le billet dans « Mes billets ».
+\end{enumerate}
+
+\subsection{Pages utiles}
+\begin{itemize}
+  \item Accueil et programmation : \url{http://127.0.0.1:8001/}
+  \item Inscription et connexion : \url{http://127.0.0.1:8001/register} et \url{http://127.0.0.1:8001/login}
+  \item Billets du compte : \url{http://127.0.0.1:8001/mes-billets}
+  \item Administration : \url{http://127.0.0.1:8001/admin}
+  \item Documentation interactive de l'API : \url{http://127.0.0.1:8001/docs}
+\end{itemize}
+
+\newpage
+\section{Fonctionnement du site}
+\subsection{Côté client}
+La page d'accueil affiche les films publiés et leur affiche. Une fiche film présente le synopsis, la durée, le genre et les séances à venir. Le plan de salle montre les sièges pris et permet de choisir les places encore libres. Chaque réservation confirmée produit un billet numérique avec un QR code.
+
+\subsection{Côté administration}
+Un administrateur ouvre \texttt{/admin} après connexion. Il peut gérer les fiches de films, publier ou dépublier un film, gérer les salles et les séances, consulter les réservations et suivre les statistiques de fréquentation.
+
+\subsection{Protection des réservations}
+Le serveur vérifie les places disponibles avant confirmation. La base de données impose aussi l'unicité d'une place pour une séance; deux clients ne peuvent donc pas réserver le même siège au même moment. Les mots de passe sont hachés. La session est portée par un cookie HTTP seulement.
+
+\section{Architecture et fichiers}
+\begin{itemize}
+  \item \textbf{FastAPI et Uvicorn} exécutent le serveur Python.
+  \item \textbf{Jinja2, HTML, CSS et JavaScript} construisent les pages affichées dans le navigateur.
+  \item \textbf{SQLAlchemy} relie le site à SQLite en local; PostgreSQL peut être configuré avec \texttt{DATABASE\_URL}.
+  \item \texttt{app/main.py} démarre l'application et initialise le schéma de base.
+  \item \texttt{app/routers/} contient les routes des pages, de l'authentification, des films, des réservations et de l'administration.
+  \item \texttt{templates/} contient les pages HTML; \texttt{static/} contient le CSS, le JavaScript et les images.
+  \item \texttt{static/uploads/films/} contient les affiches ajoutées au site; \texttt{grand\_cinema.db} est la base SQLite locale.
+\end{itemize}
+
+\newpage
+\section{Lancer le site sous Windows}
+Ouvrez PowerShell dans le dossier du projet \texttt{grand-cinema}. Les commandes ci-dessous utilisent le port 8001.
+
+\subsection{Première installation}
+Si l'environnement virtuel n'existe pas encore, créez-le puis installez les dépendances :
+\begin{lstlisting}[style=powershell]
+cd "C:\Users\LENOVO GAMMER\Documents\PROJET ABDE\grand-cinema"
+py -3.12 -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+\end{lstlisting}
+Si \texttt{.venv} existe déjà, sautez la commande de création.
+
+\subsection{Démarrer Uvicorn}
+Pour un site local en HTTP, désactivez le cookie HTTPS seulement dans cette fenêtre PowerShell, puis lancez le serveur :
+\begin{lstlisting}[style=powershell]
+$env:COOKIE_SECURE = "false"
+.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
+\end{lstlisting}
+Gardez la fenêtre ouverte. Ouvrez ensuite \url{http://127.0.0.1:8001/}. Pour arrêter le serveur, revenez dans PowerShell et appuyez sur \texttt{Ctrl+C}.
+
+\subsection{Accès et documentation}
+\begin{itemize}
+  \item Site : \url{http://127.0.0.1:8001/}
+  \item API interactive : \url{http://127.0.0.1:8001/docs}
+  \item Autre port si 8001 est déjà utilisé : remplacez \texttt{8001} par \texttt{8002} dans la commande et l'adresse du navigateur.
+\end{itemize}
+
+\newpage
+\section{Base de données, images et dépannage}
+Au premier démarrage, l'application crée les tables manquantes et insère les données de démonstration si la base est vide. Le fichier SQLite local se trouve à la racine de \texttt{grand-cinema}. Une base déjà remplie est conservée.
+
+\subsection{Ajouter ou corriger une affiche}
+Placez l'image dans \texttt{static/uploads/films/}. Le champ \texttt{poster} du film doit contenir un chemin relatif commençant par \texttt{uploads/films/}, par exemple :
+\begin{lstlisting}[style=powershell]
+uploads/films/mon-affiche.png
+\end{lstlisting}
+Les routes du site transforment ce chemin en adresse publique \texttt{/static/uploads/films/mon-affiche.png}. Le nom doit correspondre exactement au fichier, y compris espaces et accents.
+
+\subsection{Problèmes fréquents}
+\begin{itemize}
+  \item \textbf{« No module named uvicorn »} : réinstallez les dépendances avec la commande \texttt{.venv\\Scripts\\python.exe -m pip install -r requirements.txt}.
+  \item \textbf{Le port est déjà utilisé} : choisissez \texttt{--port 8002} et ouvrez \texttt{http://127.0.0.1:8002/}.
+  \item \textbf{Le navigateur ne trouve pas une affiche} : vérifiez sa présence dans \texttt{static/uploads/films/} et son chemin dans la fiche film.
+  \item \textbf{Connexion perdue en HTTP local} : définissez \texttt{COOKIE\_SECURE=false} dans la même fenêtre avant de lancer Uvicorn.
+  \item \textbf{Les changements Python ne se chargent pas} : vérifiez que vous lancez Uvicorn depuis le dossier \texttt{grand-cinema}; \texttt{--reload} recharge le code lors des modifications.
+\end{itemize}
+
+\vfill
+\begin{center}\small\color{muted}Guide préparé pour le projet local Le Grand Cinéma.\end{center}
+\end{document}
