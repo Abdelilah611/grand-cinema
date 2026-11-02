@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Choisir mes places — Le Grand Cinéma{% endblock %}
+{% block content %}
+<a class="back-link" href="/films/{{ screening.film.id }}">← Retour au film</a>
+{% if user and user.role == 'admin' %}
+<section class="empty-state compact" aria-labelledby="booking-unavailable-title"><span class="empty-icon" aria-hidden="true">✦</span><h1 id="booking-unavailable-title">Réservation réservée aux clients</h1><p>Les comptes administrateur ne peuvent pas choisir de places ni créer de réservation.</p><a class="btn" href="/admin">Retour à l’administration</a></section>
+{% else %}
+{% if not user %}
+<aside class="booking-auth-notice" role="note" aria-labelledby="booking-auth-title">
+  <span class="eyebrow">Réservation protégée</span>
+  <p id="booking-auth-title">Connectez-vous pour choisir vos places et confirmer votre réservation.</p>
+  <a class="btn btn-small" href="/login">Se connecter</a>
+</aside>
+{% endif %}
+<section class="booking-layout" aria-labelledby="booking-title">
+  <div class="booking-main">
+    <header class="booking-heading"><span class="eyebrow">Réservation des places</span><h1 id="booking-title">{{ screening.film.title }}</h1>
+      <p class="meta">{{ screening.room.name }} · {{ screening.room.room_type }} · {{ screening.start_time.strftime("%d/%m/%Y à %H:%M") }}</p></header>
+    <div class="seat-picker">
+      <div class="screen-label"><span>ÉCRAN</span></div>
+      <div class="seat-map-scroll"><div class="seat-map" id="seat-map" data-authenticated="{{ 'true' if user else 'false' }}" data-rows="{{ rows }}" data-cols="{{ cols }}" data-price="{{ screening.price }}" data-taken='{{ taken | tojson }}' aria-label="Plan des places"></div></div>
+      <ul class="legend" aria-label="Légende des places"><li><span class="seat-key available"></span>Disponible</li><li><span class="seat-key selected"></span>Sélectionnée</li><li><span class="seat-key taken"></span>Réservée</li></ul>
+    </div>
+  </div>
+  <aside class="booking-summary" aria-label="Récapitulatif de la réservation">
+    <span class="eyebrow">Votre séance</span><h2>{{ screening.film.title }}</h2>
+    <p class="summary-detail">{{ screening.start_time.strftime("%d/%m/%Y · %H:%M") }}<br>{{ screening.room.name }} · {{ screening.room.room_type }}</p>
+    <div class="summary-row"><span>Prix par place</span><strong>{{ "%.2f"|format(screening.price) }} €</strong></div>
+    <div class="summary-row"><span>Places choisies</span><strong id="selected-list">Aucune</strong></div>
+    <div class="summary-total"><span>Total</span><strong id="total">0,00 €</strong></div>
+    <p class="form-error" id="booking-error" role="alert" aria-live="polite"></p>
+    {% if user %}<button class="btn btn-wide" id="book-btn" type="button" data-price="{{ screening.price }}" data-screening-id="{{ screening.id }}" disabled>Confirmer les places</button>
+    {% else %}<a class="btn btn-wide" href="/login">Se connecter pour réserver</a>{% endif %}
+    {% if user %}<p class="summary-note">Votre sélection est sécurisée lors de la confirmation.</p>
+    {% else %}<p class="summary-note">Les places restent consultables. Connectez-vous pour les sélectionner et réserver.</p>{% endif %}
+  </aside>
+</section>
+{% endif %}
+{% endblock %}

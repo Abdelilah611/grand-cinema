@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ film.title }} — Le Grand Cinéma{% endblock %}
+{% block content %}
+<a class="back-link" href="/">← Retour aux films</a>
+<section class="film-hero" aria-labelledby="film-title">
+  <div class="film-backdrop" style="--film-backdrop: url('{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}')" aria-hidden="true"></div>
+  <div class="film-poster-frame"><img class="poster-large" data-poster-fallback src="{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}" alt="Affiche de {{ film.title }}"></div>
+  <div class="film-intro"><span class="eyebrow">{{ film.genre or 'À l’affiche' }}</span><h1 id="film-title">{{ film.title }}</h1>
+    <p class="film-lede">{{ film.synopsis or 'Découvrez ce film au Grand Cinéma.' }}</p>
+    <div class="film-quick-facts"><span>{{ film.duration_min }} min</span><span>{{ film.release_date.strftime('%d/%m/%Y') if film.release_date else film.release_year if film.release_year else 'Date à venir' }}</span><span>{{ film.age_rating or 'Classification non précisée' }}</span></div>
+    {% if not user or user.role != 'admin' %}<a class="btn" href="#screenings">Choisir une séance <span aria-hidden="true">↓</span></a>{% endif %}
+  </div>
+</section>
+
+<section class="film-info-layout" aria-label="Informations sur le film">
+  <div class="film-description"><span class="eyebrow">Le film</span><h2>À propos</h2><p>{{ film.synopsis or 'La description de ce film sera bientôt disponible.' }}</p></div>
+  <dl class="film-facts">
+    <div><dt>Réalisation</dt><dd>{{ film.director or 'Non renseigné' }}</dd></div>
+    <div><dt>Avec</dt><dd>{{ film.cast_names or 'Distribution à venir' }}</dd></div>
+    <div><dt>Genre</dt><dd>{{ film.genre or 'Non précisé' }}</dd></div>
+    <div><dt>Durée</dt><dd>{{ film.duration_min }} minutes</dd></div>
+    <div><dt>Sortie</dt><dd>{{ film.release_date.strftime('%d/%m/%Y') if film.release_date else film.release_year if film.release_year else 'À venir' }}</dd></div>
+    <div><dt>Classification</dt><dd>{{ film.age_rating or 'Non précisée' }}</dd></div>
+    <div><dt>Langue</dt><dd>{{ film.language or 'Non précisée' }}</dd></div>
+  </dl>
+</section>
+
+{% if film.trailer_url %}<section class="trailer-card"><div><span class="eyebrow">Un avant-goût</span><h2>Bande-annonce</h2><p>Découvrez l’univers du film avant votre séance.</p></div><a class="btn btn-outline" href="{{ film.trailer_url }}" target="_blank" rel="noopener noreferrer">Regarder sur YouTube <span aria-hidden="true">↗</span></a></section>{% endif %}
+
+<section id="screenings" class="screenings-section" aria-labelledby="screenings-title">
+  <div class="section-heading"><div><span class="eyebrow">À vous de choisir</span><h2 id="screenings-title">Séances à venir</h2></div></div>
+    {% for day, screenings in by_day.items() %}<div class="screening-day"><h3>{{ screenings[0].start_time.strftime('%d/%m/%Y') }}</h3><div class="screening-grid">
+    {% for s in screenings %}<article class="screening-card"><div class="screening-time">{{ s.start_time.strftime('%H:%M') }}</div><div class="screening-room"><strong>{{ s.room.name }}</strong><span>{{ s.room.room_type }} · {{ '%.2f'|format(s.price) }} € / place</span></div>{% if not user or user.role != 'admin' %}<a class="btn btn-small" href="/seances/{{ s.id }}">Réserver <span aria-hidden="true">→</span></a>{% endif %}</article>{% endfor %}
+  </div></div>{% else %}<div class="empty-state compact"><span class="empty-icon" aria-hidden="true">◷</span><h3>Aucune séance programmée</h3><p>Les prochaines horaires seront annoncés prochainement.</p></div>{% endfor %}
+</section>
+{% endblock %}

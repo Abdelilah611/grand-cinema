@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Billet {{ ticket.code }} — Le Grand Cinéma{% endblock %}
+
+{% block content %}
+<section class="ticket-page">
+  <article class="ticket-detail-card">
+
+    <header class="ticket-header">
+      <span class="ticket-brand">LE GRAND CINÉMA</span>
+      {% set is_cancelled = ticket.status == 'cancelled' or ticket.reservation.status != 'confirmed' %}
+      <span class="status-pill {% if is_cancelled %}status-cancelled{% elif ticket.status == 'used' %}status-used{% elif ticket.status == 'valid' %}status-confirmed{% else %}status-cancelled{% endif %}">
+        {% if is_cancelled %}Annulé{% elif ticket.status == 'used' %}Déjà utilisé{% elif ticket.status == 'valid' %}Valide{% else %}Billet non valide{% endif %}
+      </span>
+    </header>
+
+    <div class="ticket-film">
+      <span class="eyebrow">Votre billet électronique</span>
+      <h1>{{ ticket.reservation.screening.film.title }}</h1>
+      <p>
+        {{ ticket.reservation.screening.room.name }}
+        · {{ ticket.reservation.screening.room.room_type }}
+      </p>
+    </div>
+
+    <div class="ticket-facts">
+      <div>
+        <span>Date et heure</span>
+        <strong>{{ ticket.reservation.screening.start_time.strftime('%d/%m/%Y · %H:%M') }}</strong>
+      </div>
+
+      <div>
+        <span>Vos places</span>
+        <strong>{{ ticket.reservation.seats | map(attribute='seat_label') | join(', ') }}</strong>
+      </div>
+
+      <div>
+        <span>Code billet</span>
+        <strong>{{ ticket.code }}</strong>
+      </div>
+    </div>
+
+    <!-- QR code affiché sur la page -->
+    <div class="ticket-qr">
+      <img
+        class="qr-code"
+        src="/api/tickets/{{ ticket.code }}/qr.png"
+        alt="QR code du billet {{ ticket.code }}"
+      >
+      <p>Présentez ce code à l’entrée de la salle.</p>
+    </div>
+
+    <!-- Téléchargement du billet complet en PDF -->
+    <a
+      class="btn btn-wide"
+      href="/api/tickets/{{ ticket.code }}/pdf"
+    >
+      Télécharger mon billet en PDF
+      <span aria-hidden="true">↓</span>
+    </a>
+
+  </article>
+</section>
+{% endblock %}

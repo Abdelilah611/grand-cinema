@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Contrôle des billets — Le Grand Cinéma{% endblock %}
+{% block content %}
+<section class="ticket-check-page" aria-labelledby="ticket-check-title">
+  <header class="page-heading">
+    <span class="eyebrow">Entrée du cinéma</span>
+    <h1 id="ticket-check-title">Contrôle des billets</h1>
+    <p>Recherchez un billet, vérifiez ses informations, puis autorisez l’entrée.</p>
+  </header>
+
+  <div class="ticket-check-card">
+    <form id="ticket-check-form" method="post" action="/admin/check-ticket" novalidate>
+      <label for="ticket-code">Code du billet</label>
+      <div class="ticket-check-controls">
+        <input id="ticket-code" name="code" type="text" maxlength="32" required
+          autocomplete="off" autocapitalize="characters" spellcheck="false"
+          placeholder="Saisir ou scanner le code">
+        <button id="ticket-check-submit" class="btn" type="submit">Vérifier</button>
+        <button id="ticket-camera-start" class="btn btn-outline" type="button" hidden>Scanner un QR code</button>
+      </div>
+      <p class="ticket-check-help">Le billet doit être valide et sa réservation confirmée pour autoriser l’entrée.</p>
+      <p id="ticket-camera-unavailable" class="meta" hidden>La lecture caméra n’est pas disponible dans ce navigateur. La saisie du code reste possible.</p>
+    </form>
+
+    <section id="ticket-camera-panel" class="ticket-camera-panel" aria-label="Lecture du QR code" hidden>
+      <video id="ticket-camera-video" playsinline muted aria-label="Aperçu de la caméra pour lire un QR code"></video>
+      <div class="ticket-camera-controls">
+        <p id="ticket-camera-status" class="meta" role="status" aria-live="polite">Pointez la caméra vers le QR code du billet.</p>
+        <button id="ticket-camera-stop" class="btn btn-quiet btn-small" type="button">Arrêter le scanner</button>
+      </div>
+    </section>
+
+    <p id="ticket-check-notice" class="ticket-check-notice" role="status" aria-live="polite" hidden></p>
+
+    <section id="ticket-check-result" class="ticket-check-result" data-state="" aria-labelledby="ticket-result-title" hidden>
+      <div class="ticket-check-result-heading">
+        <span class="eyebrow">Résultat du contrôle</span>
+        <span id="ticket-result-status" class="status-pill"></span>
+        <h2 id="ticket-result-title"></h2>
+        <p id="ticket-result-message" class="meta"></p>
+      </div>
+      <dl id="ticket-result-facts" class="ticket-check-facts"></dl>
+      <button id="ticket-authorize" class="btn ticket-authorize" type="button" hidden>Autoriser l’entrée</button>
+    </section>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/ticket_check.js" defer></script>{% endblock %}

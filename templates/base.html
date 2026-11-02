@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#12141c">
+<title>{% block title %}Le Grand Cinéma{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/style.css?v=2">
+<link rel="icon" type="image/svg+xml" href="{{ request.url_for('static', path='/images/favicon.svg') }}">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Aller au contenu</a>
+<header class="site-header">
+  <a class="logo" href="/" aria-label="Le Grand Cinéma — accueil"><img class="logo-image" src="/static/images/logo.svg?v=2" alt="Le Grand Cinéma"></a>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Ouvrir le menu"><span></span><span></span><span></span></button>
+  <nav id="site-nav" class="site-nav" aria-label="Navigation principale">
+    <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Films</a>
+    {% if user %}
+      {% if user.role != "admin" %}
+      <a href="/mes-billets" {% if request.url.path == '/mes-billets' %}aria-current="page"{% endif %}>Mes billets</a>
+      {% endif %}
+      {% if user.role == "admin" %}
+        <a href="/admin" {% if request.url.path == '/admin' %}aria-current="page"{% endif %}>Administration</a>
+        <a href="/admin/check-ticket" {% if request.url.path == '/admin/check-ticket' %}aria-current="page"{% endif %}>Contrôle des billets</a>
+      {% endif %}
+      <button id="logout-btn" class="nav-logout" type="button">Déconnexion</button>
+    {% else %}
+      <a href="/login" {% if request.url.path == '/login' %}aria-current="page"{% endif %}>Connexion</a>
+      <a class="nav-cta" href="/register">Créer un compte</a>
+    {% endif %}
+  </nav>
+</header>
+<main class="container" id="main-content">
+  {% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <p class="footer-brand">Le Grand Cinéma — 10 salles, 1 700 places — Réservation en ligne, billets dématérialisés.</p>
+</footer>
+<div class="toast-region" id="toast-region" role="status" aria-live="polite" aria-atomic="true"></div>
+<dialog class="confirm-dialog" id="site-confirm" aria-labelledby="site-confirm-title"><form method="dialog"><span class="eyebrow">Confirmation</span><h2 id="site-confirm-title">Confirmer l’action ?</h2><p id="site-confirm-copy"></p><div class="dialog-actions"><button class="btn btn-quiet" value="cancel">Garder</button><button class="btn btn-danger" value="confirm">Confirmer</button></div></form></dialog>
+<script src="/static/js/main.js" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

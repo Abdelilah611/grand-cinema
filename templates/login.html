@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Connexion — Le Grand Cinéma{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-aside"><span class="eyebrow">Le grand écran vous attend</span><h1>La magie du cinéma commence ici.</h1><p>Retrouvez vos films, vos séances et vos billets au même endroit.</p></div>
+  <div class="form-card auth-card">
+    <span class="eyebrow">Ravi de vous revoir</span><h2>Connexion</h2><p class="form-intro">Connectez-vous pour retrouver vos réservations.</p>
+    <form id="login-form" data-auth-form="login" method="post" action="/login">
+      <label for="login-email">Adresse e-mail</label><input id="login-email" type="email" name="email" autocomplete="email" value="{{ login_email|default('') }}" required>
+      <label for="login-password">Mot de passe</label><input id="login-password" type="password" name="password" autocomplete="current-password" required>
+      <p class="form-error" id="login-error" role="alert" aria-live="polite">{{ login_error|default('') }}</p>
+      <button class="btn btn-wide" type="submit">Se connecter <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-switch">Pas encore de compte ? <a href="/register">Inscrivez-vous</a></p>
+  </div>
+</section>
+{% endblock %}
