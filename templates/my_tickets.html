@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Mes billets — Le Grand Cinéma{% endblock %}
+{% block content %}
+<section class="tickets-page"><header class="page-heading"><span class="eyebrow">Votre espace</span><h1>Mes réservations</h1><p>Retrouvez ici vos séances à venir et vos billets.</p></header>
+  <div class="ticket-list">
+  {% for r in reservations %}<article class="reservation-card">
+    <div class="reservation-date"><strong>{{ r.screening.start_time.strftime('%d') }}</strong><span>{{ r.screening.start_time.strftime('%b') }}</span></div>
+    <div class="reservation-info"><span class="eyebrow">{{ r.screening.room.name }} · {{ r.screening.room.room_type }}</span><h2>{{ r.screening.film.title }}</h2><p>{{ r.screening.start_time.strftime('%d/%m/%Y à %H:%M') }} · Places {{ r.seats | map(attribute='seat_label') | join(', ') }}</p></div>
+    <div class="reservation-actions"><span class="status-pill {{ 'status-cancelled' if r.status == 'cancelled' else 'status-confirmed' }}">{{ 'Annulée' if r.status == 'cancelled' else 'Confirmée' }}</span>
+      {% if r.ticket and r.status == 'confirmed' %}<a class="btn btn-small" href="/billets/{{ r.ticket.code }}">Voir le billet</a>{% endif %}
+      {% if r.status == 'confirmed' %}<button class="btn btn-small btn-quiet" type="button" data-cancel-reservation="{{ r.id }}">Annuler</button>{% endif %}
+    </div>
+  </article>{% else %}<div class="empty-state"><span class="empty-icon" aria-hidden="true">✦</span><h2>Aucune réservation pour le moment</h2><p>Choisissez un film et réservez votre prochaine séance.</p><a class="btn" href="/">Voir les films</a></div>{% endfor %}
+  </div><p id="reservation-message" class="form-error" role="status" aria-live="polite"></p>
+</section>
+{% endblock %}

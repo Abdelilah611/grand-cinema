@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Le Grand Cinéma — Films à l’affiche{% endblock %}
+{% block content %}
+{% if films %}
+{% set featured = films[0] %}
+<section class="hero feature-hero" aria-labelledby="hero-title">
+  <img class="hero-art" data-poster-fallback src="{% if featured.poster.startswith('uploads/') %}/static/{{ featured.poster }}{% else %}/static/posters/{{ featured.poster }}{% endif %}" alt="" fetchpriority="high">
+  <div class="hero-copy"><span class="eyebrow"><span class="live-dot"></span> À l’affiche maintenant</span>
+    <p class="hero-kicker">{{ featured.genre }}{% if featured.duration_min %} · {{ featured.duration_min }} min{% endif %}</p>
+    <h1 id="hero-title">{{ featured.title }}</h1>
+    <p class="hero-description">{{ featured.synopsis[:220] }}{% if featured.synopsis|length > 220 %}…{% endif %}</p>
+    <div class="hero-actions"><a class="btn" href="/films/{{ featured.id }}">Découvrir le film <span aria-hidden="true">→</span></a><a class="text-link" href="#films">Explorer tous les films</a></div>
+  </div>
+  <div class="hero-index" aria-hidden="true"><span>LE GRAND ÉCRAN</span><b>01</b><i></i></div>
+</section>
+{% else %}
+<section class="hero empty-hero"><span class="eyebrow">Le Grand Cinéma</span><h1>Votre prochaine histoire commence ici.</h1><p>Notre programmation se prépare. Revenez bientôt découvrir les prochains films à l’affiche.</p></section>
+{% endif %}
+
+<section class="catalog-section" id="films" aria-labelledby="catalog-title">
+  <div class="section-heading"><div><span class="eyebrow">La programmation</span><h2 id="catalog-title">Films à l’affiche</h2></div>
+    {% if films %}<div class="catalog-tools"><label class="search-field"><span class="sr-only">Rechercher un film</span><span aria-hidden="true">⌕</span><input id="film-search" type="search" placeholder="Rechercher un film…" autocomplete="off"></label>
+      <label class="filter-select"><span class="sr-only">Filtrer par genre</span><select id="genre-filter"><option value="">Tous les genres</option>{% for genre in films | map(attribute='genre') | unique | sort %}{% if genre %}<option value="{{ genre|lower }}">{{ genre }}</option>{% endif %}{% endfor %}</select></label>
+    </div>{% endif %}
+  </div>
+  {% if films %}<div class="film-grid" id="film-grid">
+    {% for film in films %}<article class="film-card" data-title="{{ film.title|lower }}" data-genre="{{ film.genre|lower }}">
+      <a class="poster-link" href="/films/{{ film.id }}" aria-label="Découvrir {{ film.title }}">
+        <img data-poster-fallback src="{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}" alt="Affiche de {{ film.title }}" loading="lazy">
+        <span class="poster-cta">Voir le film <span aria-hidden="true">↗</span></span>
+      </a>
+      <div class="film-card-copy"><p class="film-card-meta">{{ film.genre or 'Cinéma' }}{% if film.duration_min %}<span>·</span>{{ film.duration_min }} min{% endif %}</p>
+        <h3><a href="/films/{{ film.id }}">{{ film.title }}</a></h3>
+        {% if film.release_date or film.release_year %}<p class="release-meta">Sortie {{ film.release_date.strftime('%d/%m/%Y') if film.release_date else film.release_year }}</p>{% endif %}
+      </div>
+    </article>{% endfor %}
+  </div><p class="empty-search" id="empty-search" hidden>Aucun film ne correspond à votre recherche.</p>
+  {% else %}<div class="empty-state"><span class="empty-icon" aria-hidden="true">✦</span><h3>La programmation arrive bientôt</h3><p>Revenez découvrir nos prochaines séances.</p></div>{% endif %}
+</section>
+{% endblock %}

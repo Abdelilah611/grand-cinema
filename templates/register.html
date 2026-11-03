@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Inscription — Le Grand Cinéma{% endblock %}
+{% block content %}
+<section class="auth-layout">
+  <div class="auth-aside"><span class="eyebrow">Votre prochaine séance</span><h1>Un siège de plus dans votre histoire.</h1><p>Créez votre compte et réservez vos places en quelques instants.</p></div>
+  <div class="form-card auth-card">
+    <span class="eyebrow">Bienvenue parmi nous</span><h2>Créer un compte</h2><p class="form-intro">Quelques détails et vous êtes prêt à réserver.</p>
+    <form id="register-form" data-auth-form="register" method="post" action="/register">
+      <label for="register-name">Nom complet</label><input id="register-name" type="text" name="full_name" autocomplete="name" maxlength="255" required>
+      <label for="register-email">Adresse e-mail</label><input id="register-email" type="email" name="email" autocomplete="email" value="{{ register_email|default('') }}" required>
+      <label for="register-password">Mot de passe</label><input id="register-password" type="password" name="password" autocomplete="new-password" minlength="8" required>
+      <p class="form-error" id="register-error" role="alert" aria-live="polite">{{ register_error|default('') }}</p>
+      <button class="btn btn-wide" type="submit">Créer mon compte <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="auth-switch">Déjà inscrit ? <a href="/login">Connectez-vous</a></p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+[project]
+name = "grand-cinema"
+version = "1.0.0"
+description = "Application web de réservation de places pour Le Grand Cinéma"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+
+# Exceptions justifiées :
+# - scripts/generate_posters.py : lignes du gabarit SVG, insécables.
+# - tests/conftest.py : DATABASE_URL doit être fixée avant l'import de l'app.
+[tool.ruff.lint.per-file-ignores]
+"scripts/generate_posters.py" = ["E501"]
+"tests/conftest.py" = ["E402"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/main.py"]
