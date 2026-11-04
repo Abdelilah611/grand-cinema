@@ -5,7 +5,7 @@ Branche ``feature/reservation`` : réservations, places réservées, billets.
 """
 
 from datetime import date, datetime, timezone
-
+from sqlalchemy import LargeBinary
 from sqlalchemy import (
     DateTime,
     Date,
