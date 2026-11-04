@@ -1,8 +1,10 @@
+
 """Routes publiques : films et séances."""
 
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,6 +14,14 @@ router = APIRouter(prefix="/api", tags=["films"])
 
 
 def _film_payload(film: Film) -> dict:
+    """Retourne les informations d'un film."""
+
+    poster_url = (
+        f"/api/films/{film.id}/poster"
+        if film.poster_data
+        else film.poster
+    )
+
     return {
         "id": film.id,
         "title": film.title,
@@ -20,8 +30,12 @@ def _film_payload(film: Film) -> dict:
         "synopsis": film.synopsis,
         "director": film.director,
         "release_year": film.release_year,
-        "poster": film.poster,
-        "release_date": film.release_date.isoformat() if film.release_date else None,
+        "poster": poster_url,
+        "release_date": (
+            film.release_date.isoformat()
+            if film.release_date
+            else None
+        ),
         "age_rating": film.age_rating,
         "language": film.language,
         "cast": film.cast_names,
@@ -30,6 +44,8 @@ def _film_payload(film: Film) -> dict:
 
 
 def _screening_payload(screening: Screening) -> dict:
+    """Retourne les informations d'une séance."""
+
     return {
         "id": screening.id,
         "film_id": screening.film_id,
@@ -45,16 +61,39 @@ def _screening_payload(screening: Screening) -> dict:
 @router.get("/films")
 def list_films(db: Session = Depends(get_db)) -> list[dict]:
     """Liste tous les films à l'affiche."""
-    films = db.query(Film).filter(Film.is_published.is_(True)).order_by(Film.title).all()
+
+    films = (
+        db.query(Film)
+        .filter(Film.is_published.is_(True))
+        .order_by(Film.title)
+        .all()
+    )
+
     return [_film_payload(film) for film in films]
 
 
 @router.get("/films/{film_id}")
-def get_film(film_id: int, db: Session = Depends(get_db)) -> dict:
+def get_film(
+    film_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
     """Détail d'un film avec ses séances à venir."""
-    film = db.query(Film).filter(Film.id == film_id, Film.is_published.is_(True)).first()
+
+    film = (
+        db.query(Film)
+        .filter(
+            Film.id == film_id,
+            Film.is_published.is_(True),
+        )
+        .first()
+    )
+
     if film is None:
-        raise HTTPException(status_code=404, detail="Film introuvable.")
+        raise HTTPException(
+            status_code=404,
+            detail="Film introuvable.",
+        )
+
     screenings = (
         db.query(Screening)
         .filter(
@@ -64,9 +103,42 @@ def get_film(film_id: int, db: Session = Depends(get_db)) -> dict:
         .order_by(Screening.start_time)
         .all()
     )
+
     payload = _film_payload(film)
-    payload["screenings"] = [_screening_payload(s) for s in screenings]
+    payload["screenings"] = [
+        _screening_payload(screening)
+        for screening in screenings
+    ]
+
     return payload
+
+
+@router.get("/films/{film_id}/poster")
+def get_film_poster(
+    film_id: int,
+    db: Session = Depends(get_db),
+):
+    """Retourne l'affiche stockée dans Neon PostgreSQL."""
+
+    film = (
+        db.query(Film)
+        .filter(Film.id == film_id)
+        .first()
+    )
+
+    if film is None or not film.poster_data:
+        raise HTTPException(
+            status_code=404,
+            detail="Affiche introuvable.",
+        )
+
+    return Response(
+        content=film.poster_data,
+        media_type=film.poster_content_type or "image/jpeg",
+        headers={
+            "Cache-Control": "public, max-age=86400",
+        },
+    )
 
 
 @router.get("/screenings")
@@ -75,42 +147,90 @@ def list_screenings(
     date: str | None = None,
     db: Session = Depends(get_db),
 ) -> list[dict]:
-    """Liste les séances à venir, filtrables par film et par jour (AAAA-MM-JJ)."""
-    query = db.query(Screening).join(Film).filter(
-        Screening.start_time >= datetime.now(), Film.is_published.is_(True)
+    """Liste les séances à venir, filtrables par film et par jour."""
+
+    query = (
+        db.query(Screening)
+        .join(Film)
+        .filter(
+            Screening.start_time >= datetime.now(),
+            Film.is_published.is_(True),
+        )
     )
+
     if film_id is not None:
-        query = query.filter(Screening.film_id == film_id)
+        query = query.filter(
+            Screening.film_id == film_id
+        )
+
     if date is not None:
         try:
-            day = datetime.strptime(date, "%Y-%m-%d").date()
+            day = datetime.strptime(
+                date,
+                "%Y-%m-%d",
+            ).date()
         except ValueError:
-            raise HTTPException(status_code=400, detail="Format de date invalide.")
+            raise HTTPException(
+                status_code=400,
+                detail="Format de date invalide.",
+            )
+
         query = query.filter(
-            Screening.start_time >= datetime.combine(day, datetime.min.time()),
-            Screening.start_time < datetime.combine(day, datetime.max.time()),
+            Screening.start_time
+            >= datetime.combine(day, datetime.min.time()),
+            Screening.start_time
+            < datetime.combine(day, datetime.max.time()),
         )
-    screenings = query.order_by(Screening.start_time).all()
-    return [_screening_payload(s) for s in screenings]
+
+    screenings = (
+        query.order_by(Screening.start_time)
+        .all()
+    )
+
+    return [
+        _screening_payload(screening)
+        for screening in screenings
+    ]
 
 
 @router.get("/screenings/{screening_id}")
-def get_screening(screening_id: int, db: Session = Depends(get_db)) -> dict:
+def get_screening(
+    screening_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
     """Détail d'une séance."""
+
     screening = (
-        db.query(Screening).join(Film).filter(
-            Screening.id == screening_id, Film.is_published.is_(True)
-        ).first()
+        db.query(Screening)
+        .join(Film)
+        .filter(
+            Screening.id == screening_id,
+            Film.is_published.is_(True),
+        )
+        .first()
     )
+
     if screening is None:
-        raise HTTPException(status_code=404, detail="Séance introuvable.")
+        raise HTTPException(
+            status_code=404,
+            detail="Séance introuvable.",
+        )
+
     return _screening_payload(screening)
 
 
 @router.get("/rooms")
-def list_rooms(db: Session = Depends(get_db)) -> list[dict]:
+def list_rooms(
+    db: Session = Depends(get_db),
+) -> list[dict]:
     """Liste les salles du cinéma."""
-    rooms = db.query(Room).order_by(Room.id).all()
+
+    rooms = (
+        db.query(Room)
+        .order_by(Room.id)
+        .all()
+    )
+
     return [
         {
             "id": room.id,
