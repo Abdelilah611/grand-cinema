@@ -55,7 +55,21 @@ class Film(Base):
     synopsis: Mapped[str] = mapped_column(Text, default="")
     director: Mapped[str] = mapped_column(String(255), default="")
     release_year: Mapped[int] = mapped_column(Integer, default=0)
+
+    # Ancien champ : conserve le chemin ou l'URL de l'affiche
     poster: Mapped[str] = mapped_column(String(255), default="")
+
+    # Nouveaux champs : image stockée directement dans PostgreSQL
+    poster_data: Mapped[bytes | None] = mapped_column(
+        LargeBinary,
+        nullable=True,
+    )
+
+    poster_content_type: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
     release_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     age_rating: Mapped[str] = mapped_column(String(30), default="Tous publics")
     language: Mapped[str] = mapped_column(String(100), default="Français")
@@ -64,7 +78,9 @@ class Film(Base):
     is_published: Mapped[bool] = mapped_column(default=False, nullable=False)
 
     screenings: Mapped[list["Screening"]] = relationship(
-        "Screening", back_populates="film", cascade="all, delete-orphan"
+        "Screening",
+        back_populates="film",
+        cascade="all, delete-orphan",
     )
 
 
