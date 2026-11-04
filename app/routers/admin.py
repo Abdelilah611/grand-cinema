@@ -2,7 +2,6 @@
 
 from datetime import date, datetime
 from pathlib import Path
-import secrets
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -13,7 +12,6 @@ from starlette.datastructures import UploadFile
 from app.database import get_db
 from app.dependencies import get_current_admin
 from app.models import Film, Reservation, ReservationSeat, Room, Screening, Ticket, User
-from app.main_helpers import static_dir
 from app.routers.bookings import _reservation_payload, cancel_reservation
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -142,7 +140,11 @@ def _film_payload(film: Film) -> dict:
         "id": film.id, "title": film.title, "genre": film.genre,
         "duration_min": film.duration_min, "synopsis": film.synopsis,
         "director": film.director, "release_year": film.release_year,
-        "poster": film.poster,
+        "poster": (
+            f"/api/films/{film.id}/poster"
+            if film.poster_data
+            else film.poster
+        ),
         "release_date": (
             film.release_date.isoformat() if film.release_date else None
         ),
@@ -176,30 +178,37 @@ def _validate_trailer_url(value: str) -> None:
             )
 
 
-async def _save_poster(upload: UploadFile) -> str:
+async def _save_poster(upload: UploadFile) -> tuple[bytes, str]:
+    """Valide une affiche et retourne ses octets pour stockage dans Neon."""
+
     allowed = {
-        "image/jpeg": (b"\xff\xd8\xff", ".jpg"),
-        "image/png": (b"\x89PNG\r\n\x1a\n", ".png"),
-        "image/gif": (b"GIF8", ".gif"),
-        "image/webp": (b"RIFF", ".webp"),
+        "image/jpeg": b"\\xff\\xd8\\xff",
+        "image/png": b"\\x89PNG\\r\\n\\x1a\\n",
+        "image/gif": b"GIF8",
+        "image/webp": b"RIFF",
     }
-    spec = allowed.get(upload.content_type or "")
+
+    content_type = upload.content_type or ""
+    signature = allowed.get(content_type)
     content = await upload.read(5 * 1024 * 1024 + 1)
+
     if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="L'affiche ne doit pas dépasser 5 Mo.")
-    valid_magic = spec and content.startswith(spec[0])
-    if upload.content_type == "image/webp":
+        raise HTTPException(
+            status_code=413,
+            detail="L'affiche ne doit pas dépasser 5 Mo.",
+        )
+
+    valid_magic = signature is not None and content.startswith(signature)
+    if content_type == "image/webp":
         valid_magic = valid_magic and content[8:12] == b"WEBP"
+
     if not valid_magic:
         raise HTTPException(
             status_code=400,
             detail="Format d'affiche invalide. Utilisez JPEG, PNG, GIF ou WebP.",
         )
-    directory = static_dir() / "uploads" / "films"
-    directory.mkdir(parents=True, exist_ok=True)
-    filename = f"{secrets.token_hex(16)}{spec[1]}"
-    (directory / filename).write_bytes(content)
-    return f"uploads/films/{filename}"
+
+    return content, content_type
 
 
 class RoomBody(BaseModel):
@@ -234,7 +243,10 @@ async def admin_create_film(
     _validate_trailer_url(body.trailer_url)
     fields = body.model_dump()
     if poster_file:
-        fields["poster"] = await _save_poster(poster_file)
+        image_data, content_type = await _save_poster(poster_file)
+        fields["poster_data"] = image_data
+        fields["poster_content_type"] = content_type
+        fields["poster"] = ""
     elif fields["poster"].startswith(("/", "\\")) or ".." in Path(fields["poster"]).parts:
         raise HTTPException(status_code=422, detail="Chemin d'affiche invalide.")
     film = Film(**fields)
@@ -262,7 +274,10 @@ async def admin_update_film(
     _validate_trailer_url(body.trailer_url)
     fields = body.model_dump()
     if poster_file:
-        fields["poster"] = await _save_poster(poster_file)
+        image_data, content_type = await _save_poster(poster_file)
+        fields["poster_data"] = image_data
+        fields["poster_content_type"] = content_type
+        fields["poster"] = ""
     elif fields["poster"].startswith(("/", "\\")) or ".." in Path(fields["poster"]).parts:
         raise HTTPException(status_code=422, detail="Chemin d'affiche invalide.")
     for key, value in fields.items():
