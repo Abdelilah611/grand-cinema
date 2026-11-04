@@ -181,9 +181,9 @@ def _validate_trailer_url(value: str) -> None:
 async def _save_poster(upload: UploadFile) -> tuple[bytes, str]:
     """Valide une affiche et retourne ses octets pour stockage dans Neon."""
 
-    allowed = {
-        "image/jpeg": b"\\xff\\xd8\\xff",
-        "image/png": b"\\x89PNG\\r\\n\\x1a\\n",
+      allowed = {
+        "image/jpeg": b"\xff\xd8\xff",
+        "image/png": b"\x89PNG\r\n\x1a\n",
         "image/gif": b"GIF8",
         "image/webp": b"RIFF",
     }
