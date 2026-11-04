@@ -11,7 +11,10 @@
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   })[char]);
-  const posterUrl = (poster) => poster?.startsWith("uploads/") ? `/static/${poster}` : `/static/posters/${poster || "film1.svg"}`;
+  const posterUrl = (poster) => {
+    if (/^(https?:)?\//.test(poster || "")) return poster; // URL API ou absolue : "/api/films/N/poster"
+    return poster?.startsWith("uploads/") ? `/static/${poster}` : `/static/posters/${poster || "film1.svg"}`;
+  };
   const showError = (message = "") => { errorEl.textContent = message; };
   const money = (value) => `${Number(value).toFixed(2).replace(".", ",")} €`;
 

@@ -1,9 +1,10 @@
 
 """Routes publiques : films et séances."""
 
+import hashlib
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -18,7 +19,7 @@ def _film_payload(film: Film) -> dict:
 
     poster_url = (
         f"/api/films/{film.id}/poster"
-        if film.poster_data
+        if film.has_poster_data
         else film.poster
     )
 
@@ -116,28 +117,35 @@ def get_film(
 @router.get("/films/{film_id}/poster")
 def get_film_poster(
     film_id: int,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """Retourne l'affiche stockée dans Neon PostgreSQL."""
 
-    film = (
-        db.query(Film)
+    row = (
+        db.query(Film.poster_data, Film.poster_content_type)
         .filter(Film.id == film_id)
         .first()
     )
 
-    if film is None or not film.poster_data:
+    if row is None or not row.poster_data:
         raise HTTPException(
             status_code=404,
             detail="Affiche introuvable.",
         )
 
+    data = bytes(row.poster_data)
+    # ETag : le navigateur revalide, donc une affiche remplacée apparaît tout
+    # de suite, et reçoit un 304 (sans octets) si elle n'a pas changé.
+    etag = '"' + hashlib.sha1(data).hexdigest() + '"'
+    headers = {"ETag": etag, "Cache-Control": "public, max-age=0, must-revalidate"}
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers=headers)
+
     return Response(
-        content=film.poster_data,
-        media_type=film.poster_content_type or "image/jpeg",
-        headers={
-            "Cache-Control": "public, max-age=86400",
-        },
+        content=data,
+        media_type=row.poster_content_type or "image/jpeg",
+        headers=headers,
     )
 
 

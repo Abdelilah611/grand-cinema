@@ -25,6 +25,10 @@ def initialize_database() -> None:
         # Existing films were public before the publication flag existed.
         "is_published": "BOOLEAN NOT NULL DEFAULT TRUE",
     }
+    # Affiches stockées dans la base (BYTEA sur PostgreSQL/Neon, BLOB sur SQLite).
+    binary_type = "BYTEA" if engine.dialect.name == "postgresql" else "BLOB"
+    additions["poster_data"] = f"{binary_type}"
+    additions["poster_content_type"] = "VARCHAR(100)"
     with engine.begin() as connection:
         for name, definition in additions.items():
             if name not in existing:

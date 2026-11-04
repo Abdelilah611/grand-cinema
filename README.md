@@ -121,7 +121,7 @@ l'onglet **Films**. Le formulaire permet de créer une fiche avec son titre,
 sa description, son genre, son réalisateur, sa distribution, sa durée, sa
 date de sortie, sa classification, sa langue et une URL de bande-annonce
 YouTube. Les affiches acceptées sont JPEG, PNG, GIF et WebP, jusqu'à 5 Mo;
-elles sont stockées dans `static/uploads/films/`.
+elles sont stockées dans PostgreSQL (colonnes `poster_data` / `poster_content_type`) et servies par `/api/films/{id}/poster`.
 
 Les nouveaux films sont enregistrés en brouillon par défaut. Utilisez
 **Publier** ou choisissez **Publié** dans le formulaire pour les afficher

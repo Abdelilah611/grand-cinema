@@ -16,7 +16,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from app.database import Base
 
@@ -60,9 +60,12 @@ class Film(Base):
     poster: Mapped[str] = mapped_column(String(255), default="")
 
     # Nouveaux champs : image stockée directement dans PostgreSQL
+    # deferred : les octets ne sont lus que quand on les demande explicitement
+    # (route /api/films/{id}/poster), pas à chaque liste de films.
     poster_data: Mapped[bytes | None] = mapped_column(
         LargeBinary,
         nullable=True,
+        deferred=True,
     )
 
     poster_content_type: Mapped[str | None] = mapped_column(
@@ -184,3 +187,7 @@ class Ticket(Base):
     reservation: Mapped[Reservation] = relationship(
         "Reservation", back_populates="ticket"
     )
+
+
+# Booléen calculé par SQL : savoir si une affiche est en base sans charger les octets.
+Film.has_poster_data = column_property(Film.poster_data.is_not(None))

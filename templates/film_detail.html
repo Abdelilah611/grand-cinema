@@ -3,8 +3,8 @@
 {% block content %}
 <a class="back-link" href="/">← Retour aux films</a>
 <section class="film-hero" aria-labelledby="film-title">
-  <div class="film-backdrop" style="--film-backdrop: url('{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}')" aria-hidden="true"></div>
-  <div class="film-poster-frame"><img class="poster-large" data-poster-fallback src="{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}" alt="Affiche de {{ film.title }}"></div>
+  <div class="film-backdrop" style="--film-backdrop: url('{{ poster_src(film) }}')" aria-hidden="true"></div>
+  <div class="film-poster-frame"><img class="poster-large" data-poster-fallback src="{{ poster_src(film) }}" alt="Affiche de {{ film.title }}"></div>
   <div class="film-intro"><span class="eyebrow">{{ film.genre or 'À l’affiche' }}</span><h1 id="film-title">{{ film.title }}</h1>
     <p class="film-lede">{{ film.synopsis or 'Découvrez ce film au Grand Cinéma.' }}</p>
     <div class="film-quick-facts"><span>{{ film.duration_min }} min</span><span>{{ film.release_date.strftime('%d/%m/%Y') if film.release_date else film.release_year if film.release_year else 'Date à venir' }}</span><span>{{ film.age_rating or 'Classification non précisée' }}</span></div>

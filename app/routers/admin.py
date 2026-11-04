@@ -142,7 +142,7 @@ def _film_payload(film: Film) -> dict:
         "director": film.director, "release_year": film.release_year,
         "poster": (
             f"/api/films/{film.id}/poster"
-            if film.poster_data
+            if film.has_poster_data
             else film.poster
         ),
         "release_date": (
@@ -279,6 +279,10 @@ async def admin_update_film(
         fields["poster_data"] = image_data
         fields["poster_content_type"] = content_type
         fields["poster"] = ""
+    elif film.has_poster_data:
+        # Le formulaire renvoie l'URL API ("/api/films/N/poster") : on garde
+        # l'image déjà stockée en base sans toucher à poster ni poster_data.
+        fields.pop("poster", None)
     elif fields["poster"].startswith(("/", "\\")) or ".." in Path(fields["poster"]).parts:
         raise HTTPException(status_code=422, detail="Chemin d'affiche invalide.")
     for key, value in fields.items():

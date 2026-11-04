@@ -22,6 +22,21 @@ router = APIRouter()
 templates = Jinja2Templates(directory=str(templates_dir()))
 
 
+def poster_src(film: Film) -> str:
+    """URL de l'affiche : base de données d'abord, ancien chemin ensuite."""
+    if film.has_poster_data:
+        return f"/api/films/{film.id}/poster"
+    poster = film.poster or "film1.svg"
+    if poster.startswith(("http://", "https://", "/")):
+        return poster
+    if poster.startswith("uploads/"):
+        return f"/static/{poster}"
+    return f"/static/posters/{poster}"
+
+
+templates.env.globals["poster_src"] = poster_src
+
+
 def _context(user: User | None, **extra) -> dict:
     context = {"user": user}
     context.update(extra)

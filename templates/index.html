@@ -4,7 +4,7 @@
 {% if films %}
 {% set featured = films[0] %}
 <section class="hero feature-hero" aria-labelledby="hero-title">
-  <img class="hero-art" data-poster-fallback src="{% if featured.poster.startswith('uploads/') %}/static/{{ featured.poster }}{% else %}/static/posters/{{ featured.poster }}{% endif %}" alt="" fetchpriority="high">
+  <img class="hero-art" data-poster-fallback src="{{ poster_src(featured) }}" alt="" fetchpriority="high">
   <div class="hero-copy"><span class="eyebrow"><span class="live-dot"></span> À l’affiche maintenant</span>
     <p class="hero-kicker">{{ featured.genre }}{% if featured.duration_min %} · {{ featured.duration_min }} min{% endif %}</p>
     <h1 id="hero-title">{{ featured.title }}</h1>
@@ -26,7 +26,7 @@
   {% if films %}<div class="film-grid" id="film-grid">
     {% for film in films %}<article class="film-card" data-title="{{ film.title|lower }}" data-genre="{{ film.genre|lower }}">
       <a class="poster-link" href="/films/{{ film.id }}" aria-label="Découvrir {{ film.title }}">
-        <img data-poster-fallback src="{% if film.poster.startswith('uploads/') %}/static/{{ film.poster }}{% else %}/static/posters/{{ film.poster }}{% endif %}" alt="Affiche de {{ film.title }}" loading="lazy">
+        <img data-poster-fallback src="{{ poster_src(film) }}" alt="Affiche de {{ film.title }}" loading="lazy">
         <span class="poster-cta">Voir le film <span aria-hidden="true">↗</span></span>
       </a>
       <div class="film-card-copy"><p class="film-card-meta">{{ film.genre or 'Cinéma' }}{% if film.duration_min %}<span>·</span>{{ film.duration_min }} min{% endif %}</p>

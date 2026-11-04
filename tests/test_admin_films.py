@@ -78,10 +78,65 @@ def test_poster_upload_is_validated_and_saved(client):
         files={"poster_file": ("poster.png", b"\x89PNG\r\n\x1a\n" + b"test", "image/png")},
     )
     assert created.status_code == 201
-    poster = created.json()["poster"]
-    assert poster.startswith("uploads/films/")
-    assert (Path(__file__).parents[1] / "static" / poster).is_file()
-    (Path(__file__).parents[1] / "static" / poster).unlink()
+    film_id = created.json()["id"]
+    assert created.json()["poster"] == f"/api/films/{film_id}/poster"
+
+    # Les octets sont réellement en base, rien n'est écrit sur le disque.
+    from app.database import SessionLocal
+    from app.models import Film
+
+    with SessionLocal() as db:
+        film = db.get(Film, film_id)
+        assert film.poster_data == b"\x89PNG\r\n\x1a\ntest"
+        assert film.poster_content_type == "image/png"
+        assert film.poster == ""
+
+    served = client.get(f"/api/films/{film_id}/poster")
+    assert served.status_code == 200
+    assert served.headers["content-type"] == "image/png"
+    assert served.content == b"\x89PNG\r\n\x1a\ntest"
+
+    # Revalidation : 304 si l'affiche n'a pas changé.
+    cached = client.get(
+        f"/api/films/{film_id}/poster",
+        headers={"If-None-Match": served.headers["etag"]},
+    )
+    assert cached.status_code == 304
+
+
+def test_editing_film_without_new_file_keeps_db_poster(client):
+    """Le formulaire admin renvoie l'URL API dans `poster` : ne doit pas échouer."""
+    login(client, "admin@grandcinema.fr", "Admin123!")
+    created = client.post(
+        "/api/admin/films",
+        data={"title": "Garde mon affiche", "duration_min": "90"},
+        files={"poster_file": ("p.png", b"\x89PNG\r\n\x1a\nabc", "image/png")},
+    )
+    film_id = created.json()["id"]
+    edited = client.put(
+        f"/api/admin/films/{film_id}",
+        data={
+            "title": "Titre modifié",
+            "duration_min": "95",
+            "poster": f"/api/films/{film_id}/poster",
+        },
+    )
+    assert edited.status_code == 200
+    assert edited.json()["title"] == "Titre modifié"
+    assert edited.json()["poster"] == f"/api/films/{film_id}/poster"
+    assert client.get(f"/api/films/{film_id}/poster").content == b"\x89PNG\r\n\x1a\nabc"
+
+
+def test_public_pages_use_api_url_for_db_posters(client):
+    login(client, "admin@grandcinema.fr", "Admin123!")
+    created = client.post(
+        "/api/admin/films",
+        data={"title": "Affiche en base", "duration_min": "90", "is_published": "true"},
+        files={"poster_file": ("p.png", b"\x89PNG\r\n\x1a\nabc", "image/png")},
+    )
+    film_id = created.json()["id"]
+    assert f"/api/films/{film_id}/poster" in client.get("/").text
+    assert f"/api/films/{film_id}/poster" in client.get(f"/films/{film_id}").text
 
 
 def test_invalid_trailer_and_oversized_poster_are_rejected(client):
