@@ -181,7 +181,7 @@ def _validate_trailer_url(value: str) -> None:
 async def _save_poster(upload: UploadFile) -> tuple[bytes, str]:
     """Valide une affiche et retourne ses octets pour stockage dans Neon."""
 
-      allowed = {
+    allowed = {
         "image/jpeg": b"\xff\xd8\xff",
         "image/png": b"\x89PNG\r\n\x1a\n",
         "image/gif": b"GIF8",
@@ -199,6 +199,7 @@ async def _save_poster(upload: UploadFile) -> tuple[bytes, str]:
         )
 
     valid_magic = signature is not None and content.startswith(signature)
+
     if content_type == "image/webp":
         valid_magic = valid_magic and content[8:12] == b"WEBP"
 
