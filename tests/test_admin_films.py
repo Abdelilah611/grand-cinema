@@ -1,6 +1,6 @@
 """Film publication, access control, metadata, and poster upload coverage."""
 
-from pathlib import Path
+
 
 from tests.conftest import login
 
