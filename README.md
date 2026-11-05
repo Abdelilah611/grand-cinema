@@ -1,4 +1,4 @@
-# 🎬 Le Grand Cinéma
+# Le Grand Cinéma
 
 Application web de réservation de places de cinéma : consultation des
 films et des séances, plan de salle avec sélection des sièges,
@@ -33,7 +33,7 @@ Projet inspiré de l'énoncé d'examen « Le Grand Cinéma » : 10 salles,
 
 ## Stack technique
 
-- **Backend** : Python 3.12, FastAPI, SQLAlchemy, JWT (PyJWT).
+- **Backend** : Python 3.14.3, FastAPI, SQLAlchemy, JWT (PyJWT).
 - **Frontend** : HTML / CSS / JavaScript (templates Jinja2 servis par
   FastAPI), aucune dépendance externe.
 - **Base de données** : SQLite par défaut (`grand_cinema.db`),
