@@ -1,6 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;600;700&display=swap");
 
-/* Le Grand Cinéma — warm, restrained cinema identity. */
 :root {
   color-scheme: dark;
   --bg: #12141c;
@@ -38,8 +36,8 @@
   --shadow-card: 0 12px 30px rgb(0 0 0 / 30%);
   --ease: 180ms ease;
   --ease-slow: 360ms cubic-bezier(.2, .7, .2, 1);
-  --font-body: "Roboto", Arial, sans-serif;
-  --font-display: "Montserrat", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 7rem; }
@@ -493,8 +491,7 @@ table.data tbody tr:hover { background: rgb(255 255 255 / 2%); }
   --radius-xl: 20px;
   --shadow-soft: 0 14px 34px rgb(0 0 0 / 22%);
   --shadow-card: 0 18px 42px rgb(0 0 0 / 30%);
-  --font-body: "Roboto", Arial, sans-serif;
-  --font-display: "Montserrat", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
 }
 
 body {
@@ -725,4 +722,184 @@ table.data tbody tr:hover { background: rgb(245 235 215 / 4%); }
   .film-card-meta { flex-wrap: wrap; }
   .reservation-card:hover, .screening-card:hover { transform: none; }
   .auth-layout { padding-top: 1.75rem; }
+}
+/* Nouvelle palette complete : ivoire, bleu nuit et corail */
+:root {
+  color-scheme: light;
+  --bg: #f3f1ec;
+  --bg-soft: #e9e6df;
+  --surface: #ffffff;
+  --surface-raised: #f8f7f4;
+  --surface-hover: #eeeae2;
+  --gold: #d45d3f;
+  --gold-bright: #e36b4c;
+  --gold-dark: #b9472d;
+  --white: #172b3a;
+  --text: #263746;
+  --muted: #64717b;
+  --quiet: #87919a;
+  --line: rgb(23 43 58 / 12%);
+  --line-strong: rgb(23 43 58 / 22%);
+  --danger: #c44747;
+  --success: #27845d;
+  --card: #ffffff;
+  --accent: #d45d3f;
+  --accent-dark: #b9472d;
+  --font-body: Arial, Helvetica, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+  --shadow-soft: 0 5px 18px rgb(23 43 58 / 8%);
+  --shadow-card: 0 8px 24px rgb(23 43 58 / 10%);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+.site-header {
+  background: #172b3a;
+  border-bottom: 3px solid var(--gold);
+}
+.site-nav a, .nav-logout { color: #f7f5f0; }
+.site-nav a[aria-current="page"] { background: rgb(255 255 255 / 12%); color: #fff; }
+.site-nav a:not(.nav-cta):hover, .nav-logout:hover { background: rgb(255 255 255 / 9%); color: #ffb49f; }
+.nav-cta { border-color: var(--gold-bright); color: #fff !important; }
+.nav-cta:hover { background: var(--gold); color: #fff !important; }
+.nav-toggle { background: #243d50; border-color: rgb(255 255 255 / 25%); }
+.nav-toggle span { background: #fff; }
+.container { color: var(--text); }
+.site-footer { background: #172b3a; color: #e5e9ec; border-top-color: #31495a; }
+.footer-brand, .site-footer span { color: #d5dce1; }
+
+h1, h2, h3 { color: #172b3a; }
+a { color: var(--gold-dark); }
+a:hover { color: #963a27; }
+.eyebrow, .hero-kicker, .film-card-meta, .screening-day h3 { color: var(--gold-dark); }
+.meta, .release-meta, .hero-description, .film-lede,
+.film-description p, .auth-aside p, .page-heading p { color: #586875; }
+
+.btn { background: var(--gold); border-color: var(--gold); color: #fff; box-shadow: none; }
+.btn:hover { background: var(--gold-dark); border-color: var(--gold-dark); color: #fff; }
+.btn-outline { background: transparent; color: var(--gold-dark); }
+.btn-outline:hover { background: var(--gold); color: #fff; }
+.btn-quiet { background: #fff; border-color: var(--line-strong); color: #263746; }
+.btn-quiet:hover { background: #e9e6df; color: #172b3a; }
+.text-link { color: #263746; }
+
+.feature-hero {
+  background: linear-gradient(90deg, #172b3a 0%, rgb(23 43 58 / 96%) 38%, rgb(23 43 58 / 68%) 70%, rgb(23 43 58 / 22%) 100%), #172b3a;
+  border-color: #d9d4ca;
+  box-shadow: var(--shadow-soft);
+}
+.hero-copy h1 { color: #fff; }
+.hero-description { color: #e2e8eb; }
+.hero-kicker { color: #ffb49f; }
+.live-dot { background: #ffb49f; box-shadow: none; }
+.hero-index, .hero-index b { color: #fff; }
+.empty-hero { background: #fff; border-color: var(--line); }
+.empty-hero h1 { color: #172b3a; }
+.empty-hero p { color: var(--muted); }
+
+.search-field, .filter-select {
+  background: #fff;
+  border-color: var(--line-strong);
+  color: #52616d;
+}
+.search-field input, .filter-select select { background: transparent; color: #263746; }
+.search-field input::placeholder, input::placeholder, textarea::placeholder { color: #89939b; }
+.film-card {
+  background: #fff;
+  border-color: #e1ded7;
+  box-shadow: 0 3px 12px rgb(23 43 58 / 6%);
+}
+.film-card:hover { background: #fff; border-color: #d45d3f; box-shadow: var(--shadow-soft); }
+.film-card h3, .film-card h3 a { color: #172b3a; }
+.film-card h3 a:hover { color: var(--gold-dark); }
+.poster-link { background: #e9e6df; }
+.poster-missing:not(.hero) { background: #e9e6df; }
+.poster-missing:not(.hero)::after { color: #64717b; }
+.empty-state { background: #fff; border-color: var(--line-strong); color: var(--muted); }
+.empty-state h2, .empty-state h3 { color: #172b3a; }
+
+.film-hero { background-color: #fff; border-color: var(--line); }
+.film-backdrop { background-image: linear-gradient(90deg, rgb(23 43 58 / 95%) 0%, rgb(23 43 58 / 86%) 48%, rgb(23 43 58 / 70%) 100%), var(--film-backdrop); }
+.film-intro h1 { color: #fff; }
+.film-quick-facts span, .screening-card { background: #fff; border-color: var(--line); color: #263746; }
+.film-facts dt, .film-facts dd { color: #64717b; }
+.film-facts dd { color: #172b3a; }
+.trailer-card { background: #fff; border-color: var(--line); }
+.trailer-card h2 { color: #172b3a; }
+.screening-card:hover { background: #f8f7f4; border-color: var(--gold); }
+.screening-time { color: var(--gold-dark); }
+.screening-room strong { color: #172b3a; }
+
+.form-card, .seat-picker, .booking-summary, .ticket-check-card,
+.reservation-card, .ticket-detail-card, .ticket-check-result,
+.stat-box, .table-scroll, .confirm-dialog {
+  background: #fff;
+  border-color: var(--line);
+  color: #263746;
+  box-shadow: var(--shadow-soft);
+}
+label { color: #263746; }
+input, select, textarea {
+  background: #fff;
+  color: #263746;
+  border-color: #cbd1d5;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(212 93 63 / 13%); }
+.form-intro, .auth-switch, .summary-detail, .summary-note { color: #64717b; }
+.auth-aside h1, .auth-card h2 { color: #172b3a; }
+
+.screen-label { background: #d9e0e4; color: #172b3a; border: 1px solid #b7c2c9; box-shadow: none; }
+.screen-label span { color: #172b3a; }
+.seat { background: #e2e7ea; border-color: #9baab3; color: #263746; }
+.seat:hover:not(:disabled) { border-color: var(--gold); box-shadow: none; }
+.seat.taken, .seat.guest-locked { background: #c8ced2; border-color: #b7bec3; color: #77838b; }
+.seat.selected { background: var(--gold); border-color: var(--gold-dark); color: #fff; }
+.seat-key { background: #e2e7ea; border-color: #9baab3; }
+.seat-key.selected { background: var(--gold); border-color: var(--gold-dark); }
+.seat-key.taken { background: #c8ced2; border-color: #b7bec3; }
+.booking-summary h2, .summary-total { color: #172b3a; }
+.summary-row, .summary-total { border-top-color: var(--line); }
+.summary-row span, .summary-total span { color: #64717b; }
+.summary-total strong, .reservation-date strong, .ticket-brand { color: var(--gold-dark); }
+.booking-auth-notice { background: #fff4ef; border-color: rgb(212 93 63 / 35%); }
+.booking-auth-notice p { color: #263746; }
+
+.reservation-date { background: #fff0eb; border-color: rgb(212 93 63 / 35%); }
+.reservation-date span, .reservation-info p { color: #64717b; }
+.reservation-info h2 { color: #172b3a; }
+.ticket-header { border-bottom-color: rgb(212 93 63 / 35%); }
+.ticket-facts { background: #f8f7f4; border-color: var(--line); }
+.ticket-facts span, .ticket-film p { color: #64717b; }
+.ticket-facts strong { color: #172b3a; }
+.ticket-check-result { background: #f8f7f4; }
+.status-confirmed { background: rgb(39 132 93 / 12%); color: #23734f; }
+.status-used { background: rgb(212 93 63 / 12%); color: #a7432c; }
+.status-cancelled { background: rgb(196 71 71 / 12%); color: #a63232; }
+
+.admin-tabs { background: #edf0f1; border-color: var(--line); }
+.admin-tabs button { background: #fff; color: #263746; border-color: var(--line); }
+.admin-tabs button:hover { background: #f4f1ec; color: #172b3a; }
+.admin-tabs button.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+.admin-panel h2, .admin-table-section h2, .film-admin-heading h2 { color: #172b3a; }
+.stat-box { color: #64717b; }
+.stat-box strong { color: var(--gold-dark); }
+table.data { background: #fff; }
+table.data th { background: #172b3a; color: #fff; }
+table.data td { color: #263746; }
+table.data tbody tr:hover { background: #f5f2ed; }
+.confirm-dialog { background: #fff; color: #263746; }
+.confirm-dialog h2 { color: #172b3a; }
+.confirm-dialog p { color: #64717b; }
+
+.toast { background: #fff; color: #263746; border-color: var(--line-strong); }
+.toast-success { border-color: rgb(39 132 93 / 35%); }
+.toast-error { border-color: rgb(196 71 71 / 35%); }
+.error-code { color: var(--gold); }
+.error-page h1 { color: #172b3a; }
+
+@media (max-width: 800px) {
+  .site-nav { background: #172b3a; border-bottom-color: #31495a; }
+  .feature-hero { background: linear-gradient(0deg, #172b3a 0%, rgb(23 43 58 / 88%) 42%, rgb(23 43 58 / 24%) 100%); }
 }
