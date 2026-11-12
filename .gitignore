@@ -9,3 +9,17 @@ venv/
 htmlcov/
 .ruff_cache/
 .env
+
+# Database files and backups
+*.backup
+*.bak
+*.dump
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment secrets
+.env
+.env.*
+!.env.example
