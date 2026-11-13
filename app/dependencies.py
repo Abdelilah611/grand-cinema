@@ -56,3 +56,13 @@ def get_current_admin(user: User = Depends(get_current_user)) -> User:
             detail="Accès réservé aux administrateurs",
         )
     return user
+
+
+def get_current_customer(user: User = Depends(get_current_user)) -> User:
+    """Exige un compte client pour les réservations."""
+    if user.role != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cette fonctionnalité est réservée aux comptes clients.",
+        )
+    return user

@@ -1,6 +1,20 @@
 """Tests de réservation : création, double réservation, annulation."""
 
+import pytest
+
+from app.models import Reservation
 from tests.conftest import login
+
+
+def test_admin_cannot_create_booking(client, db):
+    login(client, "admin@grandcinema.fr", "Admin123!")
+    response = client.post(
+        "/api/bookings",
+        json={"screening_id": _future_id(db), "seats": ["A1"]},
+    )
+    assert response.status_code == 403
+    assert response.json()["detail"] == ("Cette fonctionnalité est réservée aux comptes clients.")
+    assert db[0].query(Reservation).count() == 0
 
 
 def test_draft_screening_is_not_visible_or_bookable(client, db):
@@ -9,9 +23,7 @@ def test_draft_screening_is_not_visible_or_bookable(client, db):
     db[0].commit()
     screening_id = db[1]["future"].id
     assert client.get(f"/api/screenings/{screening_id}/seats").status_code == 404
-    response = client.post(
-        "/api/bookings", json={"screening_id": screening_id, "seats": ["A1"]}
-    )
+    response = client.post("/api/bookings", json={"screening_id": screening_id, "seats": ["A1"]})
     assert response.status_code == 404
 
 
@@ -21,6 +33,31 @@ def _future_id(db):
 
 def _past_id(db):
     return db[1]["past"].id
+
+
+@pytest.mark.parametrize(
+    ("case", "expected_status", "expected_detail"),
+    [
+        ("unknown_screening", 404, "Séance introuvable."),
+        ("no_seats", 400, "Aucune place sélectionnée."),
+        ("duplicate_seat", 400, "Place en double dans la demande : A1."),
+    ],
+)
+def test_booking_rejects_invalid_requests(client, db, case, expected_status, expected_detail):
+    login(client, "user@grandcinema.fr", "User123!")
+    screening_id = 99999 if case == "unknown_screening" else _future_id(db)
+    seats = {
+        "unknown_screening": ["A1"],
+        "no_seats": [],
+        "duplicate_seat": ["A1", "A1"],
+    }[case]
+    response = client.post(
+        "/api/bookings",
+        json={"screening_id": screening_id, "seats": seats},
+    )
+    assert response.status_code == expected_status
+    assert response.json()["detail"] == expected_detail
+    assert db[0].query(Reservation).count() == 0
 
 
 def test_seats_endpoint_lists_taken_seats(client, db):
@@ -90,12 +127,24 @@ def test_booking_requires_auth(client, db):
 
 def test_cancel_frees_seat_for_rebooking(client, db):
     login(client, "user@grandcinema.fr", "User123!")
-    created = client.post(
+    created_response = client.post(
         "/api/bookings",
         json={"screening_id": _future_id(db), "seats": ["A1"]},
-    ).json()
+    )
+    assert created_response.status_code == 201
+    created = created_response.json()
+
+    login(client, "user2@grandcinema.fr", "User123!")
+    denied = client.post(f"/api/bookings/{created['reservation_id']}/cancel")
+    assert denied.status_code == 403
+
+    login(client, "user@grandcinema.fr", "User123!")
     cancel = client.post(f"/api/bookings/{created['reservation_id']}/cancel")
     assert cancel.status_code == 200
+    own_bookings = client.get("/api/bookings/me").json()
+    assert own_bookings[0]["status"] == "cancelled"
+    assert own_bookings[0]["ticket_status"] == "cancelled"
+    assert own_bookings[0]["seats"] == []
     seats = client.get(f"/api/screenings/{_future_id(db)}/seats").json()
     assert seats["taken"] == []
     rebook = client.post(

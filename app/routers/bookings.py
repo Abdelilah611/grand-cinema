@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_admin, get_current_user
+from app.dependencies import get_current_admin, get_current_customer, get_current_user
 from app.models import Film, Reservation, ReservationSeat, Screening, Ticket, User
 from app.security import generate_ticket_code
 
@@ -93,7 +93,7 @@ def get_seats(screening_id: int, db: Session = Depends(get_db)) -> dict:
 def create_booking(
     body: BookingBody,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_customer),
 ) -> dict:
     """Réserve des places pour une séance (transaction atomique)."""
     from datetime import datetime
@@ -220,9 +220,7 @@ def cancel_my_booking(
     user: User = Depends(get_current_user),
 ) -> dict:
     """Annule une réservation (propriétaire ou administrateur)."""
-    reservation = (
-        db.query(Reservation).filter(Reservation.id == reservation_id).first()
-    )
+    reservation = db.query(Reservation).filter(Reservation.id == reservation_id).first()
     if reservation is None:
         raise HTTPException(status_code=404, detail="Réservation introuvable.")
     if reservation.user_id != user.id and user.role != "admin":
@@ -235,9 +233,7 @@ def cancel_my_booking(
 
 def _accessible_ticket(code: str, db: Session, user: User) -> Ticket:
     ticket = db.query(Ticket).filter(Ticket.code == code.upper()).first()
-    if ticket is None or (
-        ticket.reservation.user_id != user.id and user.role != "admin"
-    ):
+    if ticket is None or (ticket.reservation.user_id != user.id and user.role != "admin"):
         raise HTTPException(status_code=404, detail="Billet introuvable.")
     return ticket
 

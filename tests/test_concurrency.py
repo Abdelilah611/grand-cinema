@@ -19,15 +19,21 @@ from tests.conftest import login
 def test_concurrent_booking_same_seat_creates_only_one(client, db):
     screening_id = db[1]["future"].id
     results = []
+    errors = []
+    barrier = threading.Barrier(2)
 
     def attempt(email):
-        with TestClient(app, raise_server_exceptions=False) as thread_client:
-            login(thread_client, email, "User123!")
-            response = thread_client.post(
-                "/api/bookings",
-                json={"screening_id": screening_id, "seats": ["B2"]},
-            )
-            results.append(response.status_code)
+        try:
+            with TestClient(app, raise_server_exceptions=False) as thread_client:
+                login(thread_client, email, "User123!")
+                barrier.wait(timeout=10)
+                response = thread_client.post(
+                    "/api/bookings",
+                    json={"screening_id": screening_id, "seats": ["B2"]},
+                )
+                results.append(response.status_code)
+        except Exception as exc:
+            errors.append(exc)
 
     threads = [
         threading.Thread(target=attempt, args=("user@grandcinema.fr",)),
@@ -36,8 +42,10 @@ def test_concurrent_booking_same_seat_creates_only_one(client, db):
     for thread in threads:
         thread.start()
     for thread in threads:
-        thread.join()
+        thread.join(timeout=20)
 
+    assert all(not thread.is_alive() for thread in threads)
+    assert errors == []
     assert sorted(results) == [201, 409]
     session = SessionLocal()
     try:

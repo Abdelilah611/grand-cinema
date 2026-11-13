@@ -3,7 +3,14 @@
 {% block content %}
 <section class="ticket-page">
   <article class="ticket-detail-card">
-    <header class="ticket-header"><span class="ticket-brand">LE GRAND CINÉMA</span><span class="status-pill {{ 'status-cancelled' if ticket.status != 'valid' else 'status-confirmed' }}">{{ 'Valide' if ticket.status == 'valid' else ticket.status }}</span></header>
+    {% set status_labels = {'valid': 'Valide', 'used': 'Déjà utilisé', 'cancelled': 'Annulé'} %}
+    {% set status_classes = {'valid': 'status-confirmed', 'used': 'status-confirmed', 'cancelled': 'status-cancelled'} %}
+    <header class="ticket-header">
+      <span class="ticket-brand">LE GRAND CINÉMA</span>
+      <span class="status-pill {{ status_classes.get(ticket.status, 'status-cancelled') }}">
+        {{ status_labels.get(ticket.status, 'Billet non valide') }}
+      </span>
+    </header>
     <div class="ticket-film"><span class="eyebrow">Votre billet électronique</span><h1>{{ ticket.reservation.screening.film.title }}</h1><p>{{ ticket.reservation.screening.room.name }} · {{ ticket.reservation.screening.room.room_type }}</p></div>
     <div class="ticket-facts"><div><span>Date et heure</span><strong>{{ ticket.reservation.screening.start_time.strftime('%d/%m/%Y · %H:%M') }}</strong></div><div><span>Vos places</span><strong>{{ ticket.reservation.seats | map(attribute='seat_label') | join(', ') }}</strong></div><div><span>Code billet</span><strong>{{ ticket.code }}</strong></div></div>
     <div class="ticket-qr"><img class="qr-code" src="/api/tickets/{{ ticket.code }}/qr.png" alt="QR code du billet {{ ticket.code }}"><p>Présentez ce code à l’entrée de la salle.</p></div>

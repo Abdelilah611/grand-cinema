@@ -34,7 +34,7 @@ envoyer l'en-tête `Authorization: Bearer <token>`.
 
 | Méthode | Endpoint | Description |
 | --- | --- | --- |
-| POST | `/api/bookings` | Crée une réservation. Corps : `{"screening_id": 1, "seats": ["A1", "A2"]}`. Une place déjà prise retourne **409**. |
+| POST | `/api/bookings` | Crée une réservation (compte client requis). Corps : `{"screening_id": 1, "seats": ["A1", "A2"]}`. Une place déjà prise retourne **409**. |
 | GET | `/api/bookings/me` | Réservations de l'utilisateur connecté. |
 | POST | `/api/bookings/{id}/cancel` | Annule une réservation (propriétaire ou admin), libère les places. |
 | GET | `/api/tickets/{code}` | Détail d'un billet par son code. |
