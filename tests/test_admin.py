@@ -51,10 +51,13 @@ def test_room_and_screening_history_cannot_be_cascaded(client, db):
     screening_id = db[1]["future"].id
     room_delete = client.delete(f"/api/admin/rooms/{room_id}")
     assert room_delete.status_code == 409
-    client.post(
+    login(client, "user@grandcinema.fr", "User123!")
+    reservation = client.post(
         "/api/bookings",
         json={"screening_id": screening_id, "seats": ["A1"]},
     )
+    assert reservation.status_code == 201
+    login(client, "admin@grandcinema.fr", "Admin123!")
     screening_delete = client.delete(f"/api/admin/screenings/{screening_id}")
     assert screening_delete.status_code == 409
     assert client.get("/api/admin/bookings").json()

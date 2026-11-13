@@ -421,7 +421,11 @@ def admin_delete_screening(
     screening = db.query(Screening).filter(Screening.id == screening_id).first()
     if screening is None:
         raise HTTPException(status_code=404, detail="Séance introuvable.")
-    if screening.reservations:
+    has_reservations = (
+        db.query(Reservation.id).filter(Reservation.screening_id == screening.id).first()
+        is not None
+    )
+    if has_reservations:
         raise HTTPException(
             status_code=409,
             detail=(
