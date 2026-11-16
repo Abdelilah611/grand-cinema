@@ -24,7 +24,7 @@ Projet inspiré de l'énoncé d'examen « Le Grand Cinéma » : 10 salles,
   (séance, place) + transaction atomique — deux réservations
   simultanées de la même place ne créent qu'une seule réservation
   (voir `docs/BUGFIX.md`).
-- **Billet électronique** : page billet avec QR code (PNG téléchargeable).
+- **Billet électronique** : une réservation confirmée reçoit un code unique. Le billet apparaît dans « Mes billets » avec un QR code PNG téléchargeable qui contient ce code. Un administrateur peut marquer le billet comme utilisé lors du contrôle à l’entrée.
 - **Administration** : CRUD films, salles, séances ; gestion des
   réservations ; tableau de bord (fréquentation et taux de remplissage
   global, par film, par salle et par séance).
